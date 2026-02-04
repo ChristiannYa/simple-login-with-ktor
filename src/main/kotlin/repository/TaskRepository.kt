@@ -9,9 +9,10 @@ import com.example.domain.TaskAdd
 import com.example.domain.TaskPriority
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
+import java.util.*
 
 interface ITaskRepository {
-    suspend fun allTasks(): List<Task>
+    suspend fun allTasks(userId: UUID): List<Task>
     suspend fun tasksByPriority(taskPriority: TaskPriority): List<Task>
     suspend fun taskByName(name: String): Task?
     suspend fun addTask(task: TaskAdd): Task
@@ -19,8 +20,10 @@ interface ITaskRepository {
 }
 
 class TaskRepository : ITaskRepository {
-    override suspend fun allTasks(): List<Task> = suspendTransaction {
-        TaskDao.Companion.all().map { it.toDomain() }
+    override suspend fun allTasks(userId: UUID): List<Task> = suspendTransaction {
+        TaskDao.Companion
+            .find { TaskTable.userId eq userId }
+            .map { it.toDomain() }
     }
 
     override suspend fun tasksByPriority(

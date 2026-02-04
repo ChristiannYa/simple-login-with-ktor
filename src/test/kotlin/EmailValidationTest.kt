@@ -1,4 +1,4 @@
-import com.example.utils.isValidEmail
+import com.example.auth.isValidEmail
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue

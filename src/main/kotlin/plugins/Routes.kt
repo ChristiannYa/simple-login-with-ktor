@@ -1,4 +1,4 @@
-package com.example
+package com.example.plugins
 
 import com.example.config.TaskRepositoryKey
 import com.example.config.UserRepositoryKey
