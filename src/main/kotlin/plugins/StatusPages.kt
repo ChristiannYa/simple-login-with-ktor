@@ -10,7 +10,8 @@ import io.ktor.server.response.*
 
 fun Application.configureStatusPages() {
     install(StatusPages) {
-        exception<BadRequestException> { call, _ ->
+        exception<BadRequestException> { call, cause ->
+            println("bad request exception cause: $cause")
             call.respond(
                 HttpStatusCode.BadRequest,
                 DtoRes.error("invalid request body")
@@ -24,19 +25,17 @@ fun Application.configureStatusPages() {
             )
         }
 
-        status(HttpStatusCode.NotFound) { call, _ ->
-            call.respond(
-                HttpStatusCode.NotFound,
-                DtoRes.error("404 not found")
-            )
+        status(HttpStatusCode.Unauthorized) { call, code ->
+            call.respond(code, DtoRes.error("unauthorized"))
+        }
+
+        status(HttpStatusCode.NotFound) { call, code ->
+            call.respond(code, DtoRes.error("404 not found"))
         }
 
         // Can catch "missing Content-Type header"
-        status(HttpStatusCode.UnsupportedMediaType) { call, _ ->
-            call.respond(
-                HttpStatusCode.UnsupportedMediaType,
-                DtoRes.error("unsupported media type")
-            )
+        status(HttpStatusCode.UnsupportedMediaType) { call, code ->
+            call.respond(code, DtoRes.error("unsupported media type"))
         }
     }
 }

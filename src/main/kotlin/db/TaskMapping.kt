@@ -15,7 +15,7 @@ object TaskTable : IntIdTable("tasks") { // Db schema
     val userId = uuid("user_id")
     val name = varchar("name", 50)
     val description = varchar("description", 50)
-    val priority = pgEnum<TaskPriority>("task_priority", "priority")
+    val priority = pgEnum<TaskPriority>("priority", "priority")
     val createdAt = timestamp("created_at")
 }
 

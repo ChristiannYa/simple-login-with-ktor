@@ -18,9 +18,10 @@ fun Route.requiresPremium(build: Route.() -> Unit): Route = apply {
     build()
 }
 
-fun Int.barZoo(zoo: Int.() -> Unit): Int = apply {
-    // local val bar: Int
-    // val bar = this
 
-    zoo()
-}
+//fun Int.barZoo(zoo: Int.() -> Unit): Int = apply {
+//    // local val bar: Int
+//    // val bar = this
+//
+//    zoo()
+//}
