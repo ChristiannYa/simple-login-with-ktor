@@ -11,7 +11,6 @@ import io.ktor.server.routing.*
 fun Route.getTasksByPriority() {
     get("/by-priority/{priority?}") {
         val priorityAsText = call.parameters["priority"]
-        println("priority as text: $priorityAsText")
 
         if (priorityAsText == null) {
             call.respond(HttpStatusCode.BadRequest)
@@ -20,8 +19,6 @@ fun Route.getTasksByPriority() {
 
         try {
             val taskPriorityEnum = TaskPriority.valueOf(priorityAsText.uppercase())
-            println("priority as enum: $taskPriorityEnum")
-
             val tasksByPriority = call.taskRepository.tasksByPriority(taskPriorityEnum)
 
             if (tasksByPriority.isEmpty()) {
