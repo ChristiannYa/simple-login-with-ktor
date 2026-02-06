@@ -45,7 +45,15 @@ class PgEnum<T : Enum<T>>(
 }
 
 // Extension function to use the enum
+/**
+ * `pgEnum` allows to use Kotlin enums in code while storing
+ * them as Postgres enum types in the database
+ *
+ * - `T`: Kotlin enum class
+ * - `columnName`: Column name from the Postgres table
+ * - `pgTypeName`: Postgres enum type name
+ */
 inline fun <reified T : Enum<T>> Table.pgEnum(
-    name: String,
-    dbTypeName: String
-): Column<T> = registerColumn(name, PgEnum(T::class.java, dbTypeName))
+    columnName: String,
+    pgTypeName: String
+): Column<T> = registerColumn(columnName, PgEnum(T::class.java, pgTypeName))
