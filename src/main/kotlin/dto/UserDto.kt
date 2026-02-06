@@ -18,12 +18,3 @@ data class UserDto(
     @SerialName("created_at")
     val createdAt: String
 )
-
-@Serializable
-data class UserAddRequestDto(
-    val name: String,
-    val email: String,
-
-    @SerialName("user_type")
-    val userType: String
-)

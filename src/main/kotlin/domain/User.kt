@@ -3,6 +3,10 @@ package com.example.domain
 import java.time.Instant
 import java.util.*
 
+enum class UserType {
+    USER, CONTRIBUTOR, ADMIN
+}
+
 data class User(
     val id: UUID,
     val name: String,
@@ -13,9 +17,11 @@ data class User(
     val createdAt: Instant
 )
 
-enum class UserType {
-    USER, CONTRIBUTOR, ADMIN
-}
+data class UserCreate(
+    val name: String,
+    val email: String,
+    val passwordHash: String
+)
 
 data class UserPrincipal(
     val id: UUID,

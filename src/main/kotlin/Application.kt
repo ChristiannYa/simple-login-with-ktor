@@ -15,4 +15,5 @@ fun Application.module() {
     configureJwt()
     configureRoutes()
     configureAppRoutes()
+    configureRoutesValidation()
 }

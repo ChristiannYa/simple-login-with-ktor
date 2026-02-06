@@ -25,16 +25,16 @@ class UserDao(id: EntityID<UUID>) : UUIDEntity(id) {
     var email by UserTable.email
     var passwordHash by UserTable.passwordHash
     var userType by UserTable.userType
-    val isPremium by UserTable.isPremium
+    var isPremium by UserTable.isPremium
     var createdAt by UserTable.createdAt
 }
 
- fun UserDao.toDomain() = User(
-     this.id.value,
-     this.name,
-     this.email,
-     this.passwordHash,
-     this.userType,
-     this.isPremium,
-     this.createdAt
- )
+fun UserDao.toDomain() = User(
+    this.id.value,
+    this.name,
+    this.email,
+    this.passwordHash,
+    this.userType,
+    this.isPremium,
+    this.createdAt
+)

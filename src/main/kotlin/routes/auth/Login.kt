@@ -1,13 +1,13 @@
 package com.example.routes.auth
 
 import com.example.auth.createJwt
-import com.example.auth.isValidEmail
 import com.example.auth.verifyPassword
 import com.example.config.jwtConfig
 import com.example.config.userRepository
 import com.example.domain.UserPrincipal
 import com.example.dto.DtoRes
 import com.example.dto.LoginRequestDto
+import com.example.utils.isValidEmail
 import io.ktor.http.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
@@ -15,8 +15,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.login() {
-    install(RequestValidation) { validate<LoginRequestDto> { validateRequest(it) } }
-
     post("/login") {
         val req = call.receive<LoginRequestDto>()
         val userRepository = call.userRepository
@@ -70,10 +68,7 @@ fun Route.login() {
     }
 }
 
-private fun validateRequest(req: LoginRequestDto): ValidationResult = when {
-    req.email.isEmpty() ->
-        ValidationResult.Invalid("email cannot be empty")
-
+fun validateLoginRequest(req: LoginRequestDto): ValidationResult = when {
     !req.email.isValidEmail()
         -> ValidationResult.Invalid("invalid email format")
 
