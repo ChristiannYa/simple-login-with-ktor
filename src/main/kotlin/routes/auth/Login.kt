@@ -32,11 +32,7 @@ fun Route.login() {
         }
 
         // Verify password with error handling
-        val isPasswordValid = try {
-            verifyPassword(req.password, user.passwordHash)
-        } catch (_: Exception) {
-            false
-        }
+        val isPasswordValid = verifyPassword(req.password, user.passwordHash)
 
         // Handle invalid password
         if (!isPasswordValid) {

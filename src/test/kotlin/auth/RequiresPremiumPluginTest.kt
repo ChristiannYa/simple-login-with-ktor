@@ -1,8 +1,8 @@
 package auth
 
 import com.example.plugins.configureSerialization
-import com.example.plugins.requiresPremium
 import com.example.plugins.withAuth
+import com.example.plugins.withPremium
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -36,7 +36,7 @@ class RequiresPremiumPluginTest {
 
             routing {
                 withAuth {
-                    requiresPremium {
+                    withPremium {
                         get("/premium-content") {
                             call.respond(HttpStatusCode.OK, "Success")
                         }
@@ -69,7 +69,7 @@ class RequiresPremiumPluginTest {
 
             routing {
                 withAuth {
-                    requiresPremium {
+                    withPremium {
                         get("premium-content") {
                             call.respond(HttpStatusCode.OK, "Premium content")
                         }

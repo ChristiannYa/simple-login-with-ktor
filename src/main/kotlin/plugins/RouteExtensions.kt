@@ -10,7 +10,7 @@ fun Route.withAuth(build: Route.() -> Unit): Route = authenticate("auth-jwt") {
     build()
 }
 
-fun Route.requiresPremium(build: Route.() -> Unit): Route = apply {
+fun Route.withPremium(build: Route.() -> Unit): Route = apply {
     // local val bar: Route
     // val bar = this
 
