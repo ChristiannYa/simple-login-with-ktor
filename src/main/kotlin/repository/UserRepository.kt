@@ -17,14 +17,14 @@ interface IUserRepository {
 class UserRepository : IUserRepository {
     override suspend fun findByEmail(email: String): User? = suspendTransaction {
         UserDao.Companion
-            .find { (UserTable.email eq email) }
+            .find { UserTable.email eq email }
             .singleOrNull() // Email is UNIQUE so `singleOrNull` can be used
             ?.toDomain()
     }
 
     override suspend fun createUser(user: UserCreate): User = suspendTransaction {
-        // The default values are still provided because batch inserting, Exposed can't
-        // rely on Database default because it does the following:
+        // The default values are still provided because when batch inserting Exposed can't
+        // rely on database defaults because it does the following:
         // `Batch INSERT: INSERT INTO users (name, email, password_hash) VALUES (...), (...), (...)`
         // but it has missing columns with defaults: `user_type`, `is_premium`, `created_at`
         UserDao.Companion

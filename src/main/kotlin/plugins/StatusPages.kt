@@ -1,5 +1,6 @@
 package com.example.plugins
 
+import com.auth0.jwt.exceptions.JWTCreationException
 import com.example.dto.DtoRes
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -25,9 +26,7 @@ fun Application.configureStatusPages() {
         }
 
         exception<BadRequestException> { call, cause ->
-            println("> Bad Request Exception")
-            println("> Message: ${cause.message}")
-            println("> Cause: ${cause.cause}")
+            cause.logDetails()
 
             call.respond(
                 HttpStatusCode.BadRequest,
@@ -36,6 +35,8 @@ fun Application.configureStatusPages() {
         }
 
         exception<RequestValidationException> { call, cause ->
+            cause.logDetails()
+
             call.respond(
                 HttpStatusCode.BadRequest,
                 DtoRes.error(cause.reasons.joinToString(", "))
@@ -43,9 +44,25 @@ fun Application.configureStatusPages() {
         }
 
         exception<IllegalStateException> { call, cause ->
-            println("> Illegal State Exception")
-            println("> Message: ${cause.message}")
-            println("> Cause: ${cause.cause}")
+            cause.logDetails()
+
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                DtoRes.error("internal server error")
+            )
+        }
+
+        exception<IllegalArgumentException> { call, cause ->
+            cause.logDetails()
+
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                DtoRes.error("internal server error")
+            )
+        }
+
+        exception<JWTCreationException> { call, cause ->
+            cause.logDetails()
 
             call.respond(
                 HttpStatusCode.InternalServerError,
@@ -54,9 +71,7 @@ fun Application.configureStatusPages() {
         }
 
         exception<BatchDataInconsistentException> { call, cause ->
-            println("> Batch Data Inconsistent Exception")
-            println("> Message: ${cause.message}")
-            println("> Cause: ${cause.cause}")
+            cause.logDetails()
 
             call.respond(
                 HttpStatusCode.InternalServerError,
@@ -64,4 +79,14 @@ fun Application.configureStatusPages() {
             )
         }
     }
+}
+
+private fun Throwable.logDetails() {
+    val exceptionName = this::class.simpleName ?: "Unknown Exception"
+
+    println("> $exceptionName")
+    println("> Message: ${this.message}")
+    println("> Cause: ${this.cause}")
+
+    this.printStackTrace()
 }

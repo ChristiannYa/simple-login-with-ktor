@@ -1,8 +1,7 @@
 package com.example.routes.auth
 
-import com.example.auth.createJwt
 import com.example.auth.verifyPassword
-import com.example.config.jwtConfig
+import com.example.config.jwtService
 import com.example.config.userRepository
 import com.example.domain.UserPrincipal
 import com.example.dto.DtoRes
@@ -18,6 +17,7 @@ fun Route.login() {
     post("/login") {
         val req = call.receive<LoginRequestDto>()
         val userRepository = call.userRepository
+        val jwtService = call.jwtService
 
         // Find user by email
         val user = userRepository.findByEmail(req.email)
@@ -55,7 +55,7 @@ fun Route.login() {
         )
 
         // Generate Jwt token
-        val jwtToken = createJwt(userPrincipal, call.jwtConfig)
+        val jwtToken = jwtService.createJwt(userPrincipal)
 
         // Respond with token
         call.respond(
