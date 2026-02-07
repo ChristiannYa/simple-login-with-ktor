@@ -15,6 +15,15 @@ kotlin {
     jvmToolchain(21)
 }
 
+tasks.test {
+    // Removes warnings:
+    // - A Java agent has been loaded dynamically
+    // - Dynamic loading of agents will be disallowed by default in a future release
+    jvmArgs(
+        "-XX:+EnableDynamicAgentLoading"
+    )
+}
+
 dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.server.core)
@@ -38,6 +47,8 @@ dependencies {
     implementation(libs.logback.classic)
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
 }
 
 

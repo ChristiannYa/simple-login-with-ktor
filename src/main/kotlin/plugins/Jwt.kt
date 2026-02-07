@@ -1,18 +1,11 @@
 package com.example.plugins
 
-import com.example.config.JwtConfigKey
-import com.example.config.JwtServiceKey
 import com.example.service.JwtService
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 
-fun Application.configureJwt() {
-    val jwtService = JwtService(this)
-
-    attributes.put(JwtConfigKey, jwtService.jwtConfig)
-    attributes.put(JwtServiceKey, jwtService)
-
+fun Application.configureJwt(jwtService: JwtService) {
     install(Authentication) {
         jwt("auth-jwt") {
             realm = jwtService.jwtConfig.realm

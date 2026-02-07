@@ -2,6 +2,8 @@ package com.example.plugins
 
 import com.auth0.jwt.exceptions.JWTCreationException
 import com.example.dto.DtoRes
+import com.example.exception.InvalidCredentialsException
+import com.example.exception.TokenGenerationException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -12,6 +14,9 @@ import org.jetbrains.exposed.sql.statements.BatchDataInconsistentException
 
 fun Application.configureStatusPages() {
     install(StatusPages) {
+        // ------------
+        // STATUS CODES
+        // ------------
         status(HttpStatusCode.Unauthorized) { call, code ->
             call.respond(code, DtoRes.error("unauthorized"))
         }
@@ -20,11 +25,14 @@ fun Application.configureStatusPages() {
             call.respond(code, DtoRes.error("404 not found"))
         }
 
-        // Can catch "missing Content-Type header"
+
         status(HttpStatusCode.UnsupportedMediaType) { call, code ->
             call.respond(code, DtoRes.error("unsupported media type"))
         }
 
+        // ------------------
+        // DEFAULT EXCEPTIONS
+        // ------------------
         exception<BadRequestException> { call, cause ->
             cause.logDetails()
 
@@ -76,6 +84,30 @@ fun Application.configureStatusPages() {
             call.respond(
                 HttpStatusCode.InternalServerError,
                 DtoRes.error("internal server error")
+            )
+        }
+
+        // -----------------
+        // TOKEN EXCEPTIONS
+        // ----------------
+        exception<TokenGenerationException> { call, cause ->
+            cause.logDetails()
+
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                DtoRes.error("token generation error")
+            )
+        }
+
+        // ---------------
+        // AUTH EXCEPTIONS
+        // ---------------
+        exception<InvalidCredentialsException> { call, cause ->
+            cause.logDetails()
+
+            call.respond(
+                HttpStatusCode.Unauthorized,
+                DtoRes.error("invalid credentials")
             )
         }
     }

@@ -1,4 +1,4 @@
-package auth
+package tests.auth
 
 import com.example.plugins.configureSerialization
 import com.example.plugins.withAuth
@@ -26,7 +26,7 @@ class RequiresPremiumPluginTest {
         application {
             configureSerialization()
 
-            this@application.install(Authentication) {
+            this@application.install(Authentication.Companion) {
                 jwt("auth-jwt") {
                     realm = mockJwtConfig.realm
                     verifier(createMockJwtVerifier(mockJwtConfig))
@@ -38,7 +38,7 @@ class RequiresPremiumPluginTest {
                 withAuth {
                     withPremium {
                         get("/premium-content") {
-                            call.respond(HttpStatusCode.OK, "Success")
+                            call.respond(HttpStatusCode.Companion.OK, "Success")
                         }
                     }
                 }
@@ -51,7 +51,7 @@ class RequiresPremiumPluginTest {
             header(HttpHeaders.Authorization, "Bearer $token")
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(HttpStatusCode.Companion.OK, response.status)
     }
 
     @Test
@@ -59,7 +59,7 @@ class RequiresPremiumPluginTest {
         application {
             configureSerialization()
 
-            this@application.install(Authentication) {
+            this@application.install(Authentication.Companion) {
                 jwt("auth-jwt") {
                     realm = mockJwtConfig.realm
                     verifier(createMockJwtVerifier(mockJwtConfig))
@@ -71,7 +71,7 @@ class RequiresPremiumPluginTest {
                 withAuth {
                     withPremium {
                         get("premium-content") {
-                            call.respond(HttpStatusCode.OK, "Premium content")
+                            call.respond(HttpStatusCode.Companion.OK, "Premium content")
                         }
                     }
                 }
@@ -84,6 +84,6 @@ class RequiresPremiumPluginTest {
             header(HttpHeaders.Authorization, "Bearer $token")
         }
 
-        assertEquals(HttpStatusCode.Forbidden, response.status)
+        assertEquals(HttpStatusCode.Companion.Forbidden, response.status)
     }
 }

@@ -1,32 +1,39 @@
 package com.example.config
 
 import com.example.domain.UserPrincipal
+import com.example.repository.IRefreshTokenRepository
 import com.example.repository.ITaskRepository
 import com.example.repository.IUserRepository
-import com.example.service.JwtService
+import com.example.service.AuthService
 import io.ktor.server.application.*
 import io.ktor.util.*
 
-// Attribute keys
+// --------------
+// ATTRIBUTE KEYS
+// --------------
 val UserPrincipalKey = AttributeKey<UserPrincipal>("UserPrincipal")
+
 val TaskRepositoryKey = AttributeKey<ITaskRepository>("TaskRepository")
 val UserRepositoryKey = AttributeKey<IUserRepository>("UserRepository")
-val JwtConfigKey = AttributeKey<JwtConfig>("JwtConfig")
-val JwtServiceKey = AttributeKey<JwtService>("JwtService")
+val RefreshTokenRepositoryKey = AttributeKey<IRefreshTokenRepository>("RefreshTokenRepository")
 
-// Extension properties for easy access
+val AuthServiceKey = AttributeKey<AuthService>("AuthService")
+
+// --------------------
+// EXTENSION PROPERTIES
+// --------------------
+val ApplicationCall.userPrincipal: UserPrincipal
+    get() = attributes[UserPrincipalKey] // Request-scoped (stored per request by AuthPlugin)
+
+
 val ApplicationCall.taskRepository: ITaskRepository
     get() = application.attributes[TaskRepositoryKey]
 
 val ApplicationCall.userRepository: IUserRepository
     get() = application.attributes[UserRepositoryKey]
 
-val ApplicationCall.jwtConfig: JwtConfig
-    get() = application.attributes[JwtConfigKey]
+val ApplicationCall.refreshTokenRepository: IRefreshTokenRepository
+    get() = application.attributes[RefreshTokenRepositoryKey]
 
-val ApplicationCall.jwtService: JwtService
-    get() = application.attributes[JwtServiceKey]
-
-// Request-scoped (stored per request by AuthPlugin)
-val ApplicationCall.userPrincipal: UserPrincipal
-    get() = attributes[UserPrincipalKey]
+val ApplicationCall.authService: AuthService
+    get() = application.attributes[AuthServiceKey]

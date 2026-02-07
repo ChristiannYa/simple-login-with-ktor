@@ -1,4 +1,4 @@
-package auth
+package tests.auth
 
 import com.example.config.userPrincipal
 import com.example.dto.DtoRes
@@ -26,7 +26,7 @@ class AuthPluginTest {
         application {
             configureSerialization()
 
-            this@application.install(Authentication) {
+            this@application.install(Authentication.Companion) {
                 jwt("auth-jwt") {
                     realm = mockJwtConfig.realm
                     verifier(createMockJwtVerifier(mockJwtConfig))
@@ -41,7 +41,7 @@ class AuthPluginTest {
                     get("/test") {
                         val user = call.userPrincipal
                         call.respond(
-                            HttpStatusCode.OK,
+                            HttpStatusCode.Companion.OK,
                             mapOf("user_id" to user.id.toString())
                         )
                     }
@@ -55,7 +55,7 @@ class AuthPluginTest {
             header(HttpHeaders.Authorization, "Bearer $token")
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(HttpStatusCode.Companion.OK, response.status)
     }
 
     @Test
@@ -63,14 +63,14 @@ class AuthPluginTest {
         application {
             configureSerialization()
 
-            this@application.install(Authentication) {
+            this@application.install(Authentication.Companion) {
                 jwt("auth-jwt") {
                     realm = mockJwtConfig.realm
                     verifier(createMockJwtVerifier(mockJwtConfig))
                     validate { createMockUserPrincipalFromCredential(it) }
                     challenge { _, _ ->  // defaultScheme, realm
                         call.respond(
-                            HttpStatusCode.Unauthorized,
+                            HttpStatusCode.Companion.Unauthorized,
                             DtoRes.error("token is not valid or has expired")
                         )
                     }
@@ -82,7 +82,7 @@ class AuthPluginTest {
                     install(AuthPlugin)
 
                     get("/test") {
-                        call.respond(HttpStatusCode.OK, "Success")
+                        call.respond(HttpStatusCode.Companion.OK, "Success")
                     }
                 }
             }
@@ -90,7 +90,7 @@ class AuthPluginTest {
 
         val response = client.get("/test")
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertEquals(HttpStatusCode.Companion.Unauthorized, response.status)
     }
 
     @Test
@@ -98,14 +98,14 @@ class AuthPluginTest {
         application {
             configureSerialization()
 
-            this@application.install(Authentication) {
+            this@application.install(Authentication.Companion) {
                 jwt("auth-jwt") {
                     realm = mockJwtConfig.realm
                     verifier(createMockJwtVerifier(mockJwtConfig))
                     validate { createMockUserPrincipalFromCredential(it) }
                     challenge { _, _ ->
                         call.respond(
-                            HttpStatusCode.Unauthorized,
+                            HttpStatusCode.Companion.Unauthorized,
                             DtoRes.error("token is not valid or has expired")
                         )
                     }
@@ -117,7 +117,7 @@ class AuthPluginTest {
                     install(AuthPlugin)
 
                     get("/test") {
-                        call.respond(HttpStatusCode.OK, "Success")
+                        call.respond(HttpStatusCode.Companion.OK, "Success")
                     }
                 }
             }
@@ -127,6 +127,6 @@ class AuthPluginTest {
             header(HttpHeaders.Authorization, "Bearer invalid-token-here")
         }
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertEquals(HttpStatusCode.Companion.Unauthorized, response.status)
     }
 }

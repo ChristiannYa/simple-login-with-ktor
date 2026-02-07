@@ -1,11 +1,9 @@
 package com.example.routes.auth
 
-import com.example.auth.verifyPassword
-import com.example.config.jwtService
-import com.example.config.userRepository
-import com.example.domain.UserPrincipal
+import com.example.config.authService
 import com.example.dto.DtoRes
 import com.example.dto.LoginRequestDto
+import com.example.service.AuthService
 import com.example.utils.isValidEmail
 import io.ktor.http.*
 import io.ktor.server.plugins.requestvalidation.*
@@ -16,49 +14,20 @@ import io.ktor.server.routing.*
 fun Route.login() {
     post("/login") {
         val req = call.receive<LoginRequestDto>()
-        val userRepository = call.userRepository
-        val jwtService = call.jwtService
+        val authService: AuthService = call.authService
 
-        // Find user by email
-        val user = userRepository.findByEmail(req.email)
+        // Login
+        val (accessToken, refreshToken) = authService.login(req.email, req.password)
 
-        // Handle user not found
-        if (user == null) {
-            call.respond(
-                HttpStatusCode.Unauthorized,
-                DtoRes.error("invalid email or password")
-            )
-            return@post
-        }
-
-        // Verify password with error handling
-        val isPasswordValid = verifyPassword(req.password, user.passwordHash)
-
-        // Handle invalid password
-        if (!isPasswordValid) {
-            call.respond(
-                HttpStatusCode.Unauthorized,
-                DtoRes.error("invalid email or password")
-            )
-            return@post
-        }
-
-        // Create UserPrincipal
-        val userPrincipal = UserPrincipal(
-            id = user.id,
-            type = user.type,
-            isPremium = user.isPremium
-        )
-
-        // Generate Jwt token
-        val jwtToken = jwtService.createJwt(userPrincipal)
-
-        // Respond with token
+        // Respond with tokens
         call.respond(
             HttpStatusCode.OK,
             DtoRes.success(
                 "login successful",
-                mapOf("jwt_token" to jwtToken)
+                mapOf(
+                    "access_token" to accessToken,
+                    "refresh_token" to refreshToken
+                )
             )
         )
     }
