@@ -19,6 +19,22 @@ data class RefreshTokenCreate(
     val expiresAt: Instant
 )
 
+data class TokenStrings(
+    val accessToken: String,
+    val refreshToken: String
+)
+
+data class LoginData(
+    val email: String,
+    val password: String
+)
+
+data class RegisterData(
+    val name: String,
+    val email: String,
+    val password: String
+)
+
 sealed class TokenValidationResult {
     data class Valid(val token: RefreshToken) : TokenValidationResult()
     object NotFound : TokenValidationResult()

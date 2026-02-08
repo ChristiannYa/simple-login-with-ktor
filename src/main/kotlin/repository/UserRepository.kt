@@ -11,7 +11,7 @@ import java.time.Instant
 
 interface IUserRepository {
     suspend fun findByEmail(email: String): User?
-    suspend fun createUser(user: UserCreate): User
+    suspend fun create(user: UserCreate): User
 }
 
 class UserRepository : IUserRepository {
@@ -22,7 +22,7 @@ class UserRepository : IUserRepository {
             ?.toDomain()
     }
 
-    override suspend fun createUser(user: UserCreate): User = suspendTransaction {
+    override suspend fun create(user: UserCreate): User = suspendTransaction {
         // The default values are still provided because when batch inserting Exposed can't
         // rely on database defaults because it does the following:
         // `Batch INSERT: INSERT INTO users (name, email, password_hash) VALUES (...), (...), (...)`

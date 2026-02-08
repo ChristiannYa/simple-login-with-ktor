@@ -3,6 +3,7 @@ package tests.auth
 import com.example.auth.hashPassword
 import com.example.auth.hashToken
 import com.example.auth.verifyPassword
+import com.example.domain.LoginData
 import com.example.domain.User
 import com.example.domain.UserType
 import com.example.exception.InvalidCredentialsException
@@ -60,6 +61,8 @@ class AuthServiceTest {
             createdAt = Instant.now()
         )
 
+        val loginData = LoginData(email, password)
+
         val expectedAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access"
         val expectedRefreshToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh"
 
@@ -72,7 +75,7 @@ class AuthServiceTest {
         coEvery { refreshTokenRepository.save(any()) } returns mockk(relaxed = true)
 
         // Act
-        val (accessToken, refreshToken) = authService.login(email, password)
+        val (accessToken, refreshToken) = authService.login(loginData)
 
         // Assert
         assertEquals(expectedAccessToken, accessToken)
@@ -120,12 +123,14 @@ class AuthServiceTest {
             createdAt = Instant.now()
         )
 
+        val loginData = LoginData(email, password)
+
         coEvery { userRepository.findByEmail(email) } returns user
         every { verifyPassword(password, correctPasswordHash) } returns false
 
         // Act & Assert
         assertFailsWith<InvalidCredentialsException> {
-            authService.login(email, password)
+            authService.login(loginData)
         }
 
         coVerify(exactly = 1) { userRepository.findByEmail(email) }

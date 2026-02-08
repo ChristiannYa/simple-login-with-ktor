@@ -1,6 +1,7 @@
 package com.example.routes.auth
 
 import com.example.config.authService
+import com.example.domain.LoginData
 import com.example.dto.DtoRes
 import com.example.dto.LoginRequestDto
 import com.example.service.AuthService
@@ -16,17 +17,17 @@ fun Route.login() {
         val req = call.receive<LoginRequestDto>()
         val authService: AuthService = call.authService
 
-        // Login
-        val (accessToken, refreshToken) = authService.login(req.email, req.password)
+        // Login and obtain tokens
+        val tokens = authService.login(LoginData(req.email, req.password))
 
-        // Respond with tokens
+        // Send user the tokens data
         call.respond(
             HttpStatusCode.OK,
             DtoRes.success(
                 "login successful",
                 mapOf(
-                    "access_token" to accessToken,
-                    "refresh_token" to refreshToken
+                    "access_token" to tokens.accessToken,
+                    "refresh_token" to tokens.refreshToken
                 )
             )
         )

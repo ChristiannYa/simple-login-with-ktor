@@ -28,3 +28,5 @@ data class UserPrincipal(
     val type: UserType,
     val isPremium: Boolean
 )
+
+fun User.toPrincipal() = UserPrincipal(this.id, this.type, this.isPremium)

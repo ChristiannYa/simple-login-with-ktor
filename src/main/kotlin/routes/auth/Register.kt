@@ -1,11 +1,9 @@
 package com.example.routes.auth
 
-import com.example.auth.hashPassword
-import com.example.config.userRepository
-import com.example.domain.UserCreate
+import com.example.config.authService
+import com.example.domain.RegisterData
 import com.example.dto.DtoRes
 import com.example.dto.RegisterRequestDto
-import com.example.dto.toDto
 import com.example.utils.*
 import io.ktor.http.*
 import io.ktor.server.plugins.requestvalidation.*
@@ -17,38 +15,26 @@ import io.ktor.server.routing.*
 fun Route.register() {
     post("/register") {
         val req = call.receive<RegisterRequestDto>()
-        val userRepository = call.userRepository
+        val authService = call.authService
 
-        // Check if user already exists
-        val userByEmail = userRepository.findByEmail(req.email)
-
-        // Show error if email already exists
-        if (userByEmail != null) {
-            call.respond(
-                HttpStatusCode.Conflict,
-                DtoRes.error("this email is already in use")
+        // Register and obtain tokens
+        val tokens = authService.register(
+            RegisterData(
+                name = req.name,
+                email = req.email,
+                req.password
             )
-            return@post
-        }
+        )
 
-        // @TODO: Implement a transaction in order to do the following:
-        //        - 1. Create user
-        //        - 2. Create access token
-        //        - 3. Create refresh token
-
-        // Hash password for secure insertion
-        val hashedPassword = hashPassword(req.password)
-
-        // Create user
-        val userToCreate = UserCreate(req.name, req.email, hashedPassword)
-        val userCreated = userRepository.createUser(userToCreate)
-
-        // Respond with user
+        // Send the user the tokens data
         call.respond(
             HttpStatusCode.Created,
             DtoRes.success(
-                "user created successfully",
-                mapOf("user_created" to userCreated.toDto())
+                "user registered successfully",
+                mapOf(
+                    "access_token" to tokens.accessToken,
+                    "refresh_token" to tokens.refreshToken
+                )
             )
         )
     }

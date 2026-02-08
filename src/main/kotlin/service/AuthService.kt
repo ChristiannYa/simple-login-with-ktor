@@ -1,49 +1,94 @@
 package com.example.service
 
+import com.example.auth.hashPassword
 import com.example.auth.hashToken
 import com.example.auth.verifyPassword
 import com.example.config.TokenConfiguration
-import com.example.domain.RefreshTokenCreate
-import com.example.domain.UserPrincipal
+import com.example.domain.*
 import com.example.exception.InvalidCredentialsException
+import com.example.exception.UserAlreadyExistsException
 import com.example.repository.IRefreshTokenRepository
 import com.example.repository.IUserRepository
 import java.time.Instant
+import java.util.*
 
 class AuthService(
     private val userRepository: IUserRepository,
     private val refreshTokenRepository: IRefreshTokenRepository,
     private val jwtService: JwtService
 ) {
-    suspend fun login(email: String, password: String): Pair<String, String> {
+    suspend fun login(loginData: LoginData): TokenStrings {
         // Find user by email
-        val user = userRepository.findByEmail(email)
+        val user = userRepository.findByEmail(loginData.email)
             ?: throw InvalidCredentialsException()
 
         // Verify raw password matches user's password
-        if (!verifyPassword(password, user.passwordHash))
+        if (!verifyPassword(loginData.password, user.passwordHash))
             throw InvalidCredentialsException()
 
         // Generate tokens
-        val userPrincipal = UserPrincipal(user.id, user.type, user.isPremium)
-        val accessToken = jwtService.generateAccessToken(userPrincipal)
-        val refreshToken = jwtService.generateRefreshToken(user.id)
+        val tokens = generateTokens(user.toPrincipal())
 
-        // Store hashed refresh token
-        val hashedToken = hashToken(refreshToken)
-        val expiresAt = Instant.now().plus(TokenConfiguration.REFRESH_TOKEN_DURATION)
+        // Save refresh token in database
+        saveRefreshTokenInDb(user.id, tokens.refreshToken)
 
-        // Store data needed to save the refresh token in the database
-        val refreshTokenCreateData = RefreshTokenCreate(
-            hash = hashedToken,
-            userId = user.id,
-            expiresAt = expiresAt
+        // Return token pair
+        return tokens
+    }
+
+    suspend fun register(registerData: RegisterData): TokenStrings {
+        // @TODO: Implement a transaction to make the following operations atomically:
+        //        - 1. Create user
+        //        - 2. Create access token
+        //        - 3. Create refresh token
+
+        // Check if user exists
+        if (userRepository.findByEmail(registerData.email) != null)
+            throw UserAlreadyExistsException()
+
+        // Hash password for secure database storage
+        val passwordHash = hashPassword(registerData.password)
+
+        // Create user
+        val user = userRepository.create(
+            UserCreate(
+                registerData.name,
+                registerData.email,
+                passwordHash
+            )
         )
 
-        // Save the token in the database
-        refreshTokenRepository.save(refreshTokenCreateData)
+        // Generate tokens
+        val tokens = generateTokens(user.toPrincipal())
 
-        // Return both tokens
-        return accessToken to refreshToken
+        // Save refresh token in database
+        saveRefreshTokenInDb(user.id, tokens.refreshToken)
+
+        // Return token pair
+        return tokens
+    }
+
+    private fun generateTokens(userPrincipal: UserPrincipal): TokenStrings {
+        val accessToken = jwtService.generateAccessToken(userPrincipal)
+        val refreshToken = jwtService.generateRefreshToken(userPrincipal.id)
+
+        return TokenStrings(accessToken, refreshToken)
+    }
+
+    private suspend fun saveRefreshTokenInDb(userId: UUID, refreshToken: String) {
+        // Hash the token for secure database storage
+        val refreshTokenHash = hashToken(refreshToken)
+
+        // Set refresh token expiration date
+        val expiresAt = Instant.now().plus(TokenConfiguration.REFRESH_TOKEN_DURATION)
+
+        // Save refresh token in the database
+        refreshTokenRepository.save(
+            RefreshTokenCreate(
+                hash = refreshTokenHash,
+                userId = userId,
+                expiresAt = expiresAt
+            )
+        )
     }
 }

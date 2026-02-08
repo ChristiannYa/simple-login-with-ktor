@@ -4,6 +4,7 @@ import com.auth0.jwt.exceptions.JWTCreationException
 import com.example.dto.DtoRes
 import com.example.exception.InvalidCredentialsException
 import com.example.exception.TokenGenerationException
+import com.example.exception.UserAlreadyExistsException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -108,6 +109,18 @@ fun Application.configureStatusPages() {
             call.respond(
                 HttpStatusCode.Unauthorized,
                 DtoRes.error("invalid credentials")
+            )
+        }
+
+        // ---------------
+        // USER EXCEPTIONS
+        // ---------------
+        exception<UserAlreadyExistsException> { call, cause ->
+            cause.logDetails()
+
+            call.respond(
+                HttpStatusCode.Conflict,
+                DtoRes.error("user already exists")
             )
         }
     }
