@@ -19,6 +19,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
+// @TODO: Remove application parameter for easier testing
 class JwtService(application: Application) {
     val jwtConfig = JwtConfig(
         secret = application.environment.config.property("jwt.secret").getString(),

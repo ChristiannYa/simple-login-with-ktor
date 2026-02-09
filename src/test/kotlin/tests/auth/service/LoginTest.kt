@@ -1,4 +1,4 @@
-package tests.auth
+package tests.auth.service
 
 import com.example.auth.hashPassword
 import com.example.auth.hashToken
@@ -7,42 +7,15 @@ import com.example.domain.LoginData
 import com.example.domain.User
 import com.example.domain.UserType
 import com.example.exception.InvalidCredentialsException
-import com.example.repository.IRefreshTokenRepository
-import com.example.repository.IUserRepository
-import com.example.service.AuthService
-import com.example.service.JwtService
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
-import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class AuthServiceTest {
-    private lateinit var userRepository: IUserRepository
-    private lateinit var refreshTokenRepository: IRefreshTokenRepository
-    private lateinit var jwtService: JwtService
-    private lateinit var authService: AuthService
-
-    @Before
-    fun setup() {
-        userRepository = mockk()
-        refreshTokenRepository = mockk()
-        jwtService = mockk()
-        authService = AuthService(userRepository, refreshTokenRepository, jwtService)
-
-        // Mock the top-level functions
-        mockkStatic("com.example.auth.CryptographyKt")
-    }
-
-    @After
-    fun tearDown() {
-        unmockkAll()
-    }
-
+class LoginTest : AuthServiceTest() {
     @Test
     fun `login should return access and refresh tokens when credentials are valid`() = runTest {
         // Arrange

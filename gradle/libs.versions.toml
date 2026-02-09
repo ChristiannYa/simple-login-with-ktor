@@ -10,6 +10,7 @@ koin = "3.5.3"
 flyway = "10.4.1"
 jbcrypt = "0.4"
 mockk = "1.13.8"
+testContainers = "1.21.4"
 
 
 [libraries]
@@ -37,6 +38,7 @@ postgresql = { module = "org.postgresql:postgresql", version.ref = "postgres" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testContainers" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

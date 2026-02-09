@@ -4,6 +4,7 @@ import com.example.auth.hashPassword
 import com.example.auth.hashToken
 import com.example.auth.verifyPassword
 import com.example.config.TokenConfiguration
+import com.example.db.suspendTransaction
 import com.example.domain.*
 import com.example.exception.InvalidCredentialsException
 import com.example.exception.UserAlreadyExistsException
@@ -37,11 +38,6 @@ class AuthService(
     }
 
     suspend fun register(registerData: RegisterData): TokenStrings {
-        // @TODO: Implement a transaction to make the following operations atomically:
-        //        - 1. Create user
-        //        - 2. Create access token
-        //        - 3. Create refresh token
-
         // Check if user exists
         if (userRepository.findByEmail(registerData.email) != null)
             throw UserAlreadyExistsException()
@@ -49,23 +45,25 @@ class AuthService(
         // Hash password for secure database storage
         val passwordHash = hashPassword(registerData.password)
 
-        // Create user
-        val user = userRepository.create(
-            UserCreate(
-                registerData.name,
-                registerData.email,
-                passwordHash
+        return suspendTransaction {
+            // Create user
+            val user = userRepository.create(
+                UserCreate(
+                    registerData.name,
+                    registerData.email,
+                    passwordHash
+                )
             )
-        )
 
-        // Generate tokens
-        val tokens = generateTokens(user.toPrincipal())
+            // Generate tokens
+            val tokens = generateTokens(user.toPrincipal())
 
-        // Save refresh token in database
-        saveRefreshTokenInDb(user.id, tokens.refreshToken)
+            // Save refresh token in database
+            saveRefreshTokenInDb(user.id, tokens.refreshToken)
 
-        // Return token pair
-        return tokens
+            // Return token pair
+            tokens
+        }
     }
 
     private fun generateTokens(userPrincipal: UserPrincipal): TokenStrings {
