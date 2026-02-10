@@ -14,7 +14,7 @@ import io.ktor.server.testing.*
 import mock.auth.createMockJwtVerifier
 import mock.auth.createMockTestToken
 import mock.auth.createMockUserPrincipalFromCredential
-import mock.auth.mockJwtConfig
+import mock.auth.mockJwtContent
 import mock.user.mockPremiumUserPrincipal
 import mock.user.mockUserPrincipal
 import kotlin.test.Test
@@ -28,8 +28,8 @@ class RequiresPremiumPluginTest {
 
             this@application.install(Authentication.Companion) {
                 jwt("auth-jwt") {
-                    realm = mockJwtConfig.realm
-                    verifier(createMockJwtVerifier(mockJwtConfig))
+                    realm = mockJwtContent.realm
+                    verifier(createMockJwtVerifier(mockJwtContent))
                     validate { createMockUserPrincipalFromCredential(it) }
                 }
             }
@@ -45,7 +45,7 @@ class RequiresPremiumPluginTest {
             }
         }
 
-        val token = createMockTestToken(mockPremiumUserPrincipal, mockJwtConfig)
+        val token = createMockTestToken(mockPremiumUserPrincipal, mockJwtContent)
 
         val response = client.get("/premium-content") {
             header(HttpHeaders.Authorization, "Bearer $token")
@@ -61,8 +61,8 @@ class RequiresPremiumPluginTest {
 
             this@application.install(Authentication.Companion) {
                 jwt("auth-jwt") {
-                    realm = mockJwtConfig.realm
-                    verifier(createMockJwtVerifier(mockJwtConfig))
+                    realm = mockJwtContent.realm
+                    verifier(createMockJwtVerifier(mockJwtContent))
                     validate { createMockUserPrincipalFromCredential(it) }
                 }
             }
@@ -78,7 +78,7 @@ class RequiresPremiumPluginTest {
             }
         }
 
-        val token = createMockTestToken(mockUserPrincipal, mockJwtConfig)
+        val token = createMockTestToken(mockUserPrincipal, mockJwtContent)
 
         val response = client.get("/premium-content") {
             header(HttpHeaders.Authorization, "Bearer $token")

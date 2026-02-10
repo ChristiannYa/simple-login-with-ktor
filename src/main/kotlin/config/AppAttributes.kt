@@ -5,6 +5,7 @@ import com.example.repository.IRefreshTokenRepository
 import com.example.repository.ITaskRepository
 import com.example.repository.IUserRepository
 import com.example.service.AuthService
+import com.example.service.JwtService
 import io.ktor.server.application.*
 import io.ktor.util.*
 
@@ -17,6 +18,7 @@ val TaskRepositoryKey = AttributeKey<ITaskRepository>("TaskRepository")
 val UserRepositoryKey = AttributeKey<IUserRepository>("UserRepository")
 val RefreshTokenRepositoryKey = AttributeKey<IRefreshTokenRepository>("RefreshTokenRepository")
 
+val JwtServiceKey = AttributeKey<JwtService>("JwtService")
 val AuthServiceKey = AttributeKey<AuthService>("AuthService")
 
 // --------------------
@@ -29,11 +31,6 @@ val ApplicationCall.userPrincipal: UserPrincipal
 val ApplicationCall.taskRepository: ITaskRepository
     get() = application.attributes[TaskRepositoryKey]
 
-val ApplicationCall.userRepository: IUserRepository
-    get() = application.attributes[UserRepositoryKey]
-
-val ApplicationCall.refreshTokenRepository: IRefreshTokenRepository
-    get() = application.attributes[RefreshTokenRepositoryKey]
 
 val ApplicationCall.authService: AuthService
     get() = application.attributes[AuthServiceKey]

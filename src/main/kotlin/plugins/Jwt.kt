@@ -8,7 +8,7 @@ import io.ktor.server.auth.jwt.*
 fun Application.configureJwt(jwtService: JwtService) {
     install(Authentication) {
         jwt("auth-jwt") {
-            realm = jwtService.jwtConfig.realm
+            realm = jwtService.jwtContent.realm
             verifier(jwtService.jwtVerifier)
             validate { credential -> jwtService.validate(credential) }
             challenge { _, _ -> jwtService.challenge(this) }

@@ -3,7 +3,7 @@ package com.example.service
 import com.example.auth.hashPassword
 import com.example.auth.hashToken
 import com.example.auth.verifyPassword
-import com.example.config.TokenConfiguration
+import com.example.config.TokenDuration
 import com.example.db.suspendTransaction
 import com.example.domain.*
 import com.example.exception.InvalidCredentialsException
@@ -78,7 +78,7 @@ class AuthService(
         val refreshTokenHash = hashToken(refreshToken)
 
         // Set refresh token expiration date
-        val expiresAt = Instant.now().plus(TokenConfiguration.REFRESH_TOKEN_DURATION)
+        val expiresAt = Instant.now().plus(TokenDuration.REFRESH_TOKEN)
 
         // Save refresh token in the database
         refreshTokenRepository.save(

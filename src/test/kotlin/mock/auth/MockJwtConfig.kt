@@ -1,8 +1,8 @@
 package mock.auth
 
-import com.example.config.JwtConfig
+import com.example.config.JwtContent
 
-val mockJwtConfig = JwtConfig(
+val mockJwtContent = JwtContent(
     secret = "mock-secret-key-for-testing",
     issuer = "mock-issuer",
     audience = "mock-audience",

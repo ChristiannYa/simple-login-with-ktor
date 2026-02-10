@@ -3,12 +3,12 @@ package mock.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.JWTVerifier
-import com.example.config.JwtConfig
+import com.example.config.JwtContent
 
-fun createMockJwtVerifier(jwtConfig: JwtConfig): JWTVerifier {
+fun createMockJwtVerifier(jwtContent: JwtContent): JWTVerifier {
     return JWT
-        .require(Algorithm.HMAC256(jwtConfig.secret))
-        .withAudience(jwtConfig.audience)
-        .withIssuer(jwtConfig.issuer)
+        .require(Algorithm.HMAC256(jwtContent.secret))
+        .withAudience(jwtContent.audience)
+        .withIssuer(jwtContent.issuer)
         .build()
 }

@@ -26,7 +26,6 @@ fun Application.configureStatusPages() {
             call.respond(code, DtoRes.error("404 not found"))
         }
 
-
         status(HttpStatusCode.UnsupportedMediaType) { call, code ->
             call.respond(code, DtoRes.error("unsupported media type"))
         }

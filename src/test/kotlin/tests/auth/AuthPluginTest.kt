@@ -15,7 +15,7 @@ import io.ktor.server.testing.*
 import mock.auth.createMockJwtVerifier
 import mock.auth.createMockTestToken
 import mock.auth.createMockUserPrincipalFromCredential
-import mock.auth.mockJwtConfig
+import mock.auth.mockJwtContent
 import mock.user.mockUserPrincipal
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -28,8 +28,8 @@ class AuthPluginTest {
 
             this@application.install(Authentication.Companion) {
                 jwt("auth-jwt") {
-                    realm = mockJwtConfig.realm
-                    verifier(createMockJwtVerifier(mockJwtConfig))
+                    realm = mockJwtContent.realm
+                    verifier(createMockJwtVerifier(mockJwtContent))
                     validate { createMockUserPrincipalFromCredential(it) }
                 }
             }
@@ -49,7 +49,7 @@ class AuthPluginTest {
             }
         }
 
-        val token = createMockTestToken(mockUserPrincipal, mockJwtConfig)
+        val token = createMockTestToken(mockUserPrincipal, mockJwtContent)
 
         val response = client.get("/test") {
             header(HttpHeaders.Authorization, "Bearer $token")
@@ -65,8 +65,8 @@ class AuthPluginTest {
 
             this@application.install(Authentication.Companion) {
                 jwt("auth-jwt") {
-                    realm = mockJwtConfig.realm
-                    verifier(createMockJwtVerifier(mockJwtConfig))
+                    realm = mockJwtContent.realm
+                    verifier(createMockJwtVerifier(mockJwtContent))
                     validate { createMockUserPrincipalFromCredential(it) }
                     challenge { _, _ ->  // defaultScheme, realm
                         call.respond(
@@ -100,8 +100,8 @@ class AuthPluginTest {
 
             this@application.install(Authentication.Companion) {
                 jwt("auth-jwt") {
-                    realm = mockJwtConfig.realm
-                    verifier(createMockJwtVerifier(mockJwtConfig))
+                    realm = mockJwtContent.realm
+                    verifier(createMockJwtVerifier(mockJwtContent))
                     validate { createMockUserPrincipalFromCredential(it) }
                     challenge { _, _ ->
                         call.respond(

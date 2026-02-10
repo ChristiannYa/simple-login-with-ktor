@@ -5,8 +5,8 @@ import com.auth0.jwt.JWTCreator
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTCreationException
-import com.example.config.JwtConfig
-import com.example.config.TokenConfiguration
+import com.example.config.JwtContent
+import com.example.config.TokenDuration
 import com.example.domain.UserPrincipal
 import com.example.domain.UserType
 import com.example.dto.DtoRes
@@ -19,9 +19,8 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
-// @TODO: Remove application parameter for easier testing
 class JwtService(application: Application) {
-    val jwtConfig = JwtConfig(
+    val jwtContent = JwtContent(
         secret = application.environment.config.property("jwt.secret").getString(),
         issuer = application.environment.config.property("jwt.issuer").getString(),
         audience = application.environment.config.property("jwt.audience").getString(),
@@ -29,9 +28,9 @@ class JwtService(application: Application) {
     )
 
     val jwtVerifier: JWTVerifier = JWT
-        .require(Algorithm.HMAC256(jwtConfig.secret))
-        .withAudience(jwtConfig.audience)
-        .withIssuer(jwtConfig.issuer)
+        .require(Algorithm.HMAC256(jwtContent.secret))
+        .withAudience(jwtContent.audience)
+        .withIssuer(jwtContent.issuer)
         .build()
 
     fun validate(credential: JWTCredential): UserPrincipal? {
@@ -69,7 +68,7 @@ class JwtService(application: Application) {
         return generateJwtToken(
             tokenType = "Access",
             claims = claims,
-            duration = TokenConfiguration.ACCESS_TOKEN_DURATION
+            duration = TokenDuration.ACCESS_TOKEN
         )
     }
 
@@ -79,7 +78,7 @@ class JwtService(application: Application) {
         return generateJwtToken(
             tokenType = "Refresh",
             claims = claims,
-            duration = TokenConfiguration.REFRESH_TOKEN_DURATION
+            duration = TokenDuration.REFRESH_TOKEN
         )
     }
 
@@ -91,11 +90,11 @@ class JwtService(application: Application) {
         return try {
             JWT
                 .create()
-                .withAudience(jwtConfig.audience)
-                .withIssuer(jwtConfig.issuer)
+                .withAudience(jwtContent.audience)
+                .withIssuer(jwtContent.issuer)
                 .withClaims(claims)
                 .withExpiresAt(Date.from(Instant.now().plus(duration)))
-                .sign(Algorithm.HMAC256(jwtConfig.secret))
+                .sign(Algorithm.HMAC256(jwtContent.secret))
         } catch (ex: IllegalArgumentException) {
             throw TokenGenerationException(tokenType = tokenType, cause = ex)
         } catch (ex: JWTCreationException) {
