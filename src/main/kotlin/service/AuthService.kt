@@ -11,8 +11,11 @@ import com.example.exception.UserAlreadyExistsException
 import com.example.exception.UserNotFoundException
 import com.example.repository.IRefreshTokenRepository
 import com.example.repository.IUserRepository
+import mu.KotlinLogging
 import java.time.Instant
 import java.util.*
+
+private val logger = KotlinLogging.logger {}
 
 class AuthService(
     private val userRepository: IUserRepository,
@@ -117,5 +120,14 @@ class AuthService(
                 expiresAt = expiresAt
             )
         )
+    }
+
+    suspend fun logout(refreshToken: String) {
+        val refreshTokenHash = hashToken(refreshToken)
+        val isRefreshTokenRevoked = refreshTokenRepository.revokeByHash(refreshTokenHash)
+        
+        if (!isRefreshTokenRevoked)
+            logger.warn("Attempted to revoke non-existent refresh token")
+
     }
 }

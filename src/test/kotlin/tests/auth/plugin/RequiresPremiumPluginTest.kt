@@ -1,4 +1,4 @@
-package tests.auth
+package tests.auth.plugin
 
 import com.example.plugins.configureSerialization
 import com.example.plugins.withAuth

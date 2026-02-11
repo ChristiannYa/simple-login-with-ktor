@@ -128,9 +128,9 @@ class JwtService(application: Application) {
                 .withClaims(claims)
                 .withExpiresAt(Date.from(Instant.now().plus(duration)))
                 .sign(Algorithm.HMAC256(jwtPayload.secret))
-        } catch (ex: IllegalArgumentException) {
-            throw TokenGenerationException(errorMessage, ex.cause)
         } catch (ex: JWTCreationException) {
+            throw TokenGenerationException(errorMessage, ex.cause)
+        } catch (ex: IllegalArgumentException) {
             throw TokenGenerationException(errorMessage, ex.cause)
         }
     }

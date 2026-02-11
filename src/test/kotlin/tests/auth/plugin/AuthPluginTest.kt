@@ -1,4 +1,4 @@
-package tests.auth
+package tests.auth.plugin
 
 import com.example.config.userPrincipal
 import com.example.dto.DtoRes

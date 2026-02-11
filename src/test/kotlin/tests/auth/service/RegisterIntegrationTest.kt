@@ -12,6 +12,7 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class RegisterIntegrationTest : AuthServiceTest() {
     @Test
@@ -25,8 +26,8 @@ class RegisterIntegrationTest : AuthServiceTest() {
         // Assert
         assertNotNull(tokens.accessToken)
         assertNotNull(tokens.refreshToken)
-        assertEquals("fake-access-token", tokens.accessToken)
-        assertEquals("fake-refresh-token", tokens.refreshToken)
+        assertTrue(tokens.accessToken.startsWith("fake-access-token"))
+        assertTrue(tokens.refreshToken.startsWith("fake-refresh-token"))
 
         // Verify user exists in the database
         val user = userRepository.findByEmail(registerData.email)

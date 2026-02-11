@@ -7,5 +7,6 @@ fun Route.authRoutes() {
         login()
         register()
         refresh()
+        logout()
     }
 }

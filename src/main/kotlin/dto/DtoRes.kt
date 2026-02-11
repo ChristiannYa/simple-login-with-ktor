@@ -10,6 +10,6 @@ object DtoRes {
         val data: Map<String, T>?
     )
 
-    fun <T> success(message: String, data: Map<String, T>) = Response(true, message, data)
+    fun <T> success(message: String, data: Map<String, T>? = null) = Response(true, message, data)
     fun error(message: String) = Response<Nothing>(false, message, data = null)
 }
