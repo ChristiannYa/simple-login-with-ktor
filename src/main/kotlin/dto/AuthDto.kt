@@ -18,3 +18,9 @@ data class RegisterRequestDto(
     @SerialName("confirmed_password")
     val confirmedPassword: String
 )
+
+@Serializable
+data class RefreshRequestDto(
+    @SerialName("refresh_token")
+    val refreshToken: String
+)

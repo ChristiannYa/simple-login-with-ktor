@@ -5,7 +5,7 @@ import com.example.plugins.scoped.RequiresPremiumPlugin
 import io.ktor.server.auth.*
 import io.ktor.server.routing.*
 
-fun Route.withAuth(build: Route.() -> Unit): Route = authenticate("auth-jwt") {
+fun Route.withAuth(build: Route.() -> Unit) = authenticate("auth-jwt") {
     install(AuthPlugin)
     build()
 }

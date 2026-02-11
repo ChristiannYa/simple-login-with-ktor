@@ -1,5 +1,6 @@
 package com.example.routes.app
 
+import com.example.plugins.withAuth
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.response.*
@@ -15,9 +16,14 @@ fun Application.configureAppRoutes() {
             call.respondText("Hello World!")
         }
 
-        // Non-task related routes can be added here
-        // get("/ping") {
-        //    call.respondText("pong")
-        // }
+        get("/ping") {
+            call.respondText("pong")
+        }
+
+        withAuth {
+            get("/with-auth") {
+                call.respondText("you're authorized")
+            }
+        }
     }
 }

@@ -5,12 +5,18 @@ import com.auth0.jwt.JWTCreator
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTCreationException
-import com.example.config.JwtContent
+import com.auth0.jwt.exceptions.JWTVerificationException
+import com.auth0.jwt.interfaces.DecodedJWT
+import com.example.config.JwtPayload
 import com.example.config.TokenDuration
+import com.example.domain.TokenType
 import com.example.domain.UserPrincipal
 import com.example.domain.UserType
 import com.example.dto.DtoRes
+import com.example.exception.InvalidTokenException
 import com.example.exception.TokenGenerationException
+import com.example.exception.TokenVerificationException
+import com.example.utils.prettify
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.jwt.*
@@ -20,7 +26,7 @@ import java.time.Instant
 import java.util.*
 
 class JwtService(application: Application) {
-    val jwtContent = JwtContent(
+    val jwtPayload = JwtPayload(
         secret = application.environment.config.property("jwt.secret").getString(),
         issuer = application.environment.config.property("jwt.issuer").getString(),
         audience = application.environment.config.property("jwt.audience").getString(),
@@ -28,9 +34,9 @@ class JwtService(application: Application) {
     )
 
     val jwtVerifier: JWTVerifier = JWT
-        .require(Algorithm.HMAC256(jwtContent.secret))
-        .withAudience(jwtContent.audience)
-        .withIssuer(jwtContent.issuer)
+        .require(Algorithm.HMAC256(jwtPayload.secret))
+        .withAudience(jwtPayload.audience)
+        .withIssuer(jwtPayload.issuer)
         .build()
 
     fun validate(credential: JWTCredential): UserPrincipal? {
@@ -62,11 +68,11 @@ class JwtService(application: Application) {
         val claims = mapOf(
             "userId" to userPrincipal.id.toString(),
             "type" to userPrincipal.type.name,
-            "isPremium" to userPrincipal.isPremium.toString()
+            "isPremium" to userPrincipal.isPremium
         )
 
         return generateJwtToken(
-            tokenType = "Access",
+            tokenType = TokenType.ACCESS,
             claims = claims,
             duration = TokenDuration.ACCESS_TOKEN
         )
@@ -76,37 +82,70 @@ class JwtService(application: Application) {
         val claims = mapOf("userId" to userId.toString())
 
         return generateJwtToken(
-            tokenType = "Refresh",
+            tokenType = TokenType.REFRESH,
             claims = claims,
             duration = TokenDuration.REFRESH_TOKEN
         )
     }
 
+    fun verifyToken(token: String, tokenType: TokenType): DecodedJWT {
+        return try {
+            jwtVerifier.verify(token)
+        } catch (ex: JWTVerificationException) {
+            throw TokenVerificationException(
+                "Error verifying ${tokenType.prettify()} Token",
+                ex
+            )
+        }
+    }
+
+    fun extractUserId(decodedJwt: DecodedJWT, tokenType: TokenType): UUID {
+        val userId = decodedJwt.getClaim("userId")
+            ?: throw InvalidTokenException("${tokenType.prettify()} Token missing userId claim")
+
+        return try {
+            UUID.fromString(userId.asString())
+        } catch (ex: IllegalArgumentException) {
+            throw InvalidTokenException(
+                "${tokenType.prettify()} Token has invalid userId format",
+                ex.cause
+            )
+        }
+    }
+
     private fun generateJwtToken(
-        tokenType: String,
-        claims: Map<String, String>,
+        tokenType: TokenType,
+        claims: Map<String, Any>,
         duration: Duration
     ): String {
+        val errorMessage = "Error generating ${tokenType.prettify()} Token"
+
         return try {
             JWT
                 .create()
-                .withAudience(jwtContent.audience)
-                .withIssuer(jwtContent.issuer)
+                .withAudience(jwtPayload.audience)
+                .withIssuer(jwtPayload.issuer)
                 .withClaims(claims)
                 .withExpiresAt(Date.from(Instant.now().plus(duration)))
-                .sign(Algorithm.HMAC256(jwtContent.secret))
+                .sign(Algorithm.HMAC256(jwtPayload.secret))
         } catch (ex: IllegalArgumentException) {
-            throw TokenGenerationException(tokenType = tokenType, cause = ex)
+            throw TokenGenerationException(errorMessage, ex.cause)
         } catch (ex: JWTCreationException) {
-            throw TokenGenerationException(tokenType = tokenType, cause = ex)
+            throw TokenGenerationException(errorMessage, ex.cause)
         }
     }
 
     private fun JWTCreator.Builder.withClaims(
-        claims: Map<String, String>
+        claims: Map<String, Any>
     ): JWTCreator.Builder {
-        claims.forEach { (k, v) ->
-            this.withClaim(k, v)
+        claims.forEach { (key, value) ->
+            when (value) {
+                is String -> this.withClaim(key, value)
+                is Boolean -> this.withClaim(key, value)
+                is Int -> this.withClaim(key, value)
+                is Long -> this.withClaim(key, value)
+                else -> this.withClaim(key, value.toString())
+            }
         }
         return this
     }

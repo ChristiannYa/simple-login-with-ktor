@@ -3,11 +3,11 @@ package com.example.config
 import java.time.Duration
 
 object TokenDuration {
-    val ACCESS_TOKEN: Duration = Duration.ofHours(1)
-    val REFRESH_TOKEN: Duration = Duration.ofDays(1)
+    val ACCESS_TOKEN: Duration = Duration.ofSeconds(80)
+    val REFRESH_TOKEN: Duration = Duration.ofMinutes(5)
 }
 
-data class JwtContent(
+data class JwtPayload(
     val secret: String,
     val issuer: String,
     val audience: String,

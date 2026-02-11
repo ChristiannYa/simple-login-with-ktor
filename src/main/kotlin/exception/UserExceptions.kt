@@ -21,10 +21,3 @@ class UserNotFoundException(
 class UserAlreadyExistsException(
     message: String = "User with this email already exists"
 ) : UserException(message)
-
-/**
- * Thrown when user validation fails
- */
-class InvalidUserDataException(
-    message: String = "Invalid user data"
-) : UserException(message)

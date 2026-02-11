@@ -8,6 +8,7 @@ import com.example.db.suspendTransaction
 import com.example.domain.*
 import com.example.exception.InvalidCredentialsException
 import com.example.exception.UserAlreadyExistsException
+import com.example.exception.UserNotFoundException
 import com.example.repository.IRefreshTokenRepository
 import com.example.repository.IUserRepository
 import java.time.Instant
@@ -64,6 +65,34 @@ class AuthService(
             // Return token pair
             tokens
         }
+    }
+
+    suspend fun refreshAccessToken(refreshTokenString: String): String {
+        // Verify JWT signature
+        val decodedJwt = jwtService.verifyToken(refreshTokenString, TokenType.REFRESH)
+
+        // Extract user id
+        val userId = jwtService.extractUserId(decodedJwt, TokenType.REFRESH)
+
+        // Hash refresh token
+        val refreshTokenHash = hashToken(refreshTokenString)
+
+        // Obtain token validation result
+        val validationResult = refreshTokenRepository.validate(refreshTokenHash, userId)
+
+        // Obtain refresh token if validation result passed
+        val refreshToken = validationResult.getTokenOrThrow()
+
+        // Get current user data
+        val user = userRepository.findById(userId)
+            ?: throw UserNotFoundException()
+
+        // Update last used time before generating access token, that way if generation
+        // fails the timestamps will show that an attempt was made
+        refreshTokenRepository.updateLastUsedTime(refreshToken.hash)
+
+        // Generate new access token
+        return jwtService.generateAccessToken(user.toPrincipal())
     }
 
     private fun generateTokens(userPrincipal: UserPrincipal): TokenStrings {

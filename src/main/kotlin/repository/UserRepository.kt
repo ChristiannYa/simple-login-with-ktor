@@ -8,13 +8,22 @@ import com.example.domain.User
 import com.example.domain.UserCreate
 import com.example.domain.UserType
 import java.time.Instant
+import java.util.*
 
 interface IUserRepository {
+    suspend fun findById(id: UUID): User?
     suspend fun findByEmail(email: String): User?
     suspend fun create(user: UserCreate): User
 }
 
 class UserRepository : IUserRepository {
+    override suspend fun findById(id: UUID): User? = suspendTransaction {
+        UserDao.Companion
+            .find { UserTable.id eq id }
+            .singleOrNull()
+            ?.toDomain()
+    }
+
     override suspend fun findByEmail(email: String): User? = suspendTransaction {
         UserDao.Companion
             .find { UserTable.email eq email }

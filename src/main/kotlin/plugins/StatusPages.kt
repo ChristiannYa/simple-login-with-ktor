@@ -2,9 +2,7 @@ package com.example.plugins
 
 import com.auth0.jwt.exceptions.JWTCreationException
 import com.example.dto.DtoRes
-import com.example.exception.InvalidCredentialsException
-import com.example.exception.TokenGenerationException
-import com.example.exception.UserAlreadyExistsException
+import com.example.exception.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -18,10 +16,6 @@ fun Application.configureStatusPages() {
         // ------------
         // STATUS CODES
         // ------------
-        status(HttpStatusCode.Unauthorized) { call, code ->
-            call.respond(code, DtoRes.error("unauthorized"))
-        }
-
         status(HttpStatusCode.NotFound) { call, code ->
             call.respond(code, DtoRes.error("404 not found"))
         }
@@ -90,6 +84,24 @@ fun Application.configureStatusPages() {
         // -----------------
         // TOKEN EXCEPTIONS
         // ----------------
+        exception<InvalidTokenException> { call, cause ->
+            cause.logDetails()
+
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                DtoRes.error("token is invalid")
+            )
+        }
+
+        exception<TokenVerificationException> { call, cause ->
+            cause.logDetails()
+
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                DtoRes.error("token verification failed. ${cause.cause?.message}")
+            )
+        }
+
         exception<TokenGenerationException> { call, cause ->
             cause.logDetails()
 
@@ -114,6 +126,15 @@ fun Application.configureStatusPages() {
         // ---------------
         // USER EXCEPTIONS
         // ---------------
+        exception<UserNotFoundException> { call, cause ->
+            cause.logDetails()
+
+            call.respond(
+                HttpStatusCode.Conflict,
+                DtoRes.error("user not found")
+            )
+        }
+
         exception<UserAlreadyExistsException> { call, cause ->
             cause.logDetails()
 

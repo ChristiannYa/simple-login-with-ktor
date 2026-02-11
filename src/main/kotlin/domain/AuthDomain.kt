@@ -1,5 +1,6 @@
 package com.example.domain
 
+import com.example.exception.InvalidTokenException
 import java.time.Instant
 import java.util.*
 
@@ -11,7 +12,10 @@ data class RefreshToken(
     val createdAt: Instant,
     val lastUsedAt: Instant? = null,
     val revokedAt: Instant? = null
-)
+) {
+    fun isExpired(): Boolean = expiresAt.isBefore(Instant.now())
+    fun isRevoked(): Boolean = revokedAt != null
+}
 
 data class RefreshTokenCreate(
     val hash: String,
@@ -41,3 +45,18 @@ sealed class TokenValidationResult {
     object Revoked : TokenValidationResult()
     object Expired : TokenValidationResult()
 }
+
+fun TokenValidationResult.getTokenOrThrow(): RefreshToken = when (this) {
+    is TokenValidationResult.NotFound ->
+        throw InvalidTokenException("Refresh Token not found")
+
+    is TokenValidationResult.Revoked ->
+        throw InvalidTokenException("Refresh Token revoked")
+
+    is TokenValidationResult.Expired ->
+        throw InvalidTokenException("Refresh token expired")
+
+    is TokenValidationResult.Valid -> this.token
+}
+
+enum class TokenType { ACCESS, REFRESH }

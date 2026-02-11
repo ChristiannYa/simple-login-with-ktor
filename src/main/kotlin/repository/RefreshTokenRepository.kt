@@ -89,12 +89,13 @@ class RefreshTokenRepository : IRefreshTokenRepository {
                         (RefreshTokenTable.userId eq userId)
             }
             .firstOrNull()
+            ?.toDomain()
 
         when {
             token == null -> TokenValidationResult.NotFound
-            token.revokedAt != null -> TokenValidationResult.Revoked
-            token.expiresAt.isBefore(Instant.now()) -> TokenValidationResult.Expired
-            else -> TokenValidationResult.Valid(token.toDomain())
+            token.isRevoked() -> TokenValidationResult.Revoked
+            token.isExpired() -> TokenValidationResult.Expired
+            else -> TokenValidationResult.Valid(token)
         }
     }
 

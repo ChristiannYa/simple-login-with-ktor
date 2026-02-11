@@ -15,8 +15,6 @@ import io.ktor.server.routing.*
 import java.util.*
 
 fun Route.addTask() {
-    install(RequestValidation) { validate<TaskAddRequestDto> { validateRequest(it) } }
-
     post {
         val req = call.receive<TaskAddRequestDto>()
 

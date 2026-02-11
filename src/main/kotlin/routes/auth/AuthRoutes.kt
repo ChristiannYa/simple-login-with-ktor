@@ -6,5 +6,6 @@ fun Route.authRoutes() {
     route("/auth") {
         login()
         register()
+        refresh()
     }
 }
