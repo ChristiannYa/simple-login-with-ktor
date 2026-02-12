@@ -11,7 +11,7 @@ fun Application.configureJwt(jwtService: JwtService) {
             realm = jwtService.jwtPayload.realm
             verifier(jwtService.jwtVerifier)
             validate { credential -> jwtService.validate(credential) }
-            challenge { _, _ -> jwtService.challenge(this) }
+            challenge { _, _ -> jwtService.challenge() }
         }
     }
 }

@@ -12,15 +12,13 @@ import com.example.config.TokenDuration
 import com.example.domain.TokenType
 import com.example.domain.UserPrincipal
 import com.example.domain.UserType
-import com.example.dto.DtoRes
 import com.example.exception.InvalidTokenException
 import com.example.exception.TokenGenerationException
 import com.example.exception.TokenVerificationException
+import com.example.exception.UnauthorizedException
 import com.example.utils.prettify
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.response.*
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -57,11 +55,8 @@ class JwtService(application: Application) {
         }
     }
 
-    suspend fun challenge(context: JWTChallengeContext) {
-        context.call.respond(
-            HttpStatusCode.Unauthorized,
-            DtoRes.error("token is not valid or has expired")
-        )
+    fun challenge() {
+        throw UnauthorizedException("token is not valid or has expired")
     }
 
     fun generateAccessToken(userPrincipal: UserPrincipal): String {
