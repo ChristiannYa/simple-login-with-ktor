@@ -1,6 +1,5 @@
 package com.example.plugins
 
-import com.auth0.jwt.exceptions.JWTCreationException
 import com.example.dto.DtoRes
 import com.example.exception.*
 import io.ktor.http.*
@@ -27,122 +26,102 @@ fun Application.configureStatusPages() {
         // ------------------
         // DEFAULT EXCEPTIONS
         // ------------------
-        exception<BadRequestException> { call, cause ->
-            cause.logDetails()
+        handleException<BadRequestException>(
+            "invalid request body",
+            HttpStatusCode.BadRequest
+        )
 
-            call.respond(
-                HttpStatusCode.BadRequest,
-                DtoRes.error("invalid request body")
-            )
-        }
+        handleException<IllegalStateException>(
+            "internal server error",
+            HttpStatusCode.BadRequest
+        )
 
-        exception<RequestValidationException> { call, cause ->
-            cause.logDetails()
+        handleException<IllegalArgumentException>(
+            "internal server error",
+            HttpStatusCode.BadRequest
+        )
 
-            call.respond(
-                HttpStatusCode.BadRequest,
-                DtoRes.error(cause.reasons.joinToString(", "))
-            )
-        }
+        handleException<BatchDataInconsistentException>(
+            "internal server error",
+            HttpStatusCode.BadRequest
+        )
 
-        exception<IllegalStateException> { call, cause ->
-            cause.logDetails()
-
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                DtoRes.error("internal server error")
-            )
-        }
-
-        exception<IllegalArgumentException> { call, cause ->
-            cause.logDetails()
-
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                DtoRes.error("internal server error")
-            )
-        }
-
-        exception<JWTCreationException> { call, cause ->
-            cause.logDetails()
-
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                DtoRes.error("internal server error")
-            )
-        }
-
-        exception<BatchDataInconsistentException> { call, cause ->
-            cause.logDetails()
-
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                DtoRes.error("internal server error")
-            )
-        }
+        handleException<RequestValidationException>(
+            "request validation error",
+            HttpStatusCode.BadRequest
+        )
 
         // -----------------
         // TOKEN EXCEPTIONS
         // ----------------
-        exception<InvalidTokenException> { call, cause ->
-            cause.logDetails()
+        handleExceptions<TokenException> { cause ->
+            when (cause) {
+                is InvalidTokenException
+                    -> "token is invalid" to HttpStatusCode.Unauthorized
 
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                DtoRes.error("token is invalid")
-            )
-        }
+                is TokenVerificationException
+                    -> "token verification failed" to HttpStatusCode.Unauthorized
 
-        exception<TokenVerificationException> { call, cause ->
-            cause.logDetails()
+                is TokenGenerationException
+                    -> "token generation error" to HttpStatusCode.InternalServerError
 
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                DtoRes.error("token verification failed. ${cause.cause?.message}")
-            )
-        }
-
-        exception<TokenGenerationException> { call, cause ->
-            cause.logDetails()
-
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                DtoRes.error("token generation error")
-            )
+                else -> "token error occurred" to HttpStatusCode.InternalServerError
+            }
         }
 
         // ---------------
         // AUTH EXCEPTIONS
         // ---------------
-        exception<InvalidCredentialsException> { call, cause ->
-            cause.logDetails()
+        handleExceptions<AuthException> { cause ->
+            when (cause) {
+                is InvalidCredentialsException ->
+                    "invalid credentials" to HttpStatusCode.Unauthorized
 
-            call.respond(
-                HttpStatusCode.Unauthorized,
-                DtoRes.error("invalid credentials")
-            )
+                is UnauthorizedException ->
+                    "authentication required" to HttpStatusCode.Unauthorized
+
+                is ForbiddenException ->
+                    "no permission to access this resource" to HttpStatusCode.Forbidden
+
+                else -> "authentication error" to HttpStatusCode.InternalServerError
+            }
         }
 
         // ---------------
         // USER EXCEPTIONS
         // ---------------
-        exception<UserNotFoundException> { call, cause ->
-            cause.logDetails()
+        handleExceptions<UserException> { cause ->
+            when (cause) {
+                is UserNotFoundException
+                    -> "user not found" to HttpStatusCode.NotFound
 
-            call.respond(
-                HttpStatusCode.Conflict,
-                DtoRes.error("user not found")
-            )
+                is UserAlreadyExistsException
+                    -> "user already exists" to HttpStatusCode.Conflict
+
+                else
+                    -> "a user error occurred" to HttpStatusCode.InternalServerError
+            }
         }
+    }
+}
 
-        exception<UserAlreadyExistsException> { call, cause ->
-            cause.logDetails()
+private inline fun <reified T : Throwable> StatusPagesConfig.handleException(
+    message: String,
+    statusCode: HttpStatusCode
+) {
+    exception<T> { call, cause ->
+        cause.logDetails()
+        call.respond(statusCode, DtoRes.error(message))
+    }
+}
 
-            call.respond(
-                HttpStatusCode.Conflict,
-                DtoRes.error("user already exists")
-            )
-        }
+private inline fun <reified T : Throwable> StatusPagesConfig.handleExceptions(
+    crossinline mapper: (T) -> Pair<String, HttpStatusCode>
+) {
+    exception<T> { call, cause ->
+        cause.logDetails()
+        val (message, statusCode) = mapper(cause)
+        call.respond(statusCode, DtoRes.error(message))
     }
 }
 
