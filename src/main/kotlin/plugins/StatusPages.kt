@@ -64,8 +64,6 @@ fun Application.configureStatusPages() {
 
                 is TokenGenerationException
                     -> "token generation error" to HttpStatusCode.InternalServerError
-
-                else -> "token error occurred" to HttpStatusCode.InternalServerError
             }
         }
 
@@ -82,8 +80,6 @@ fun Application.configureStatusPages() {
 
                 is ForbiddenException ->
                     "no permission to access this resource" to HttpStatusCode.Forbidden
-
-                else -> "authentication error" to HttpStatusCode.InternalServerError
             }
         }
 
@@ -97,9 +93,6 @@ fun Application.configureStatusPages() {
 
                 is UserAlreadyExistsException
                     -> "user already exists" to HttpStatusCode.Conflict
-
-                else
-                    -> "a user error occurred" to HttpStatusCode.InternalServerError
             }
         }
     }

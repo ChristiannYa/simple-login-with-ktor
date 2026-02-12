@@ -3,7 +3,7 @@ package com.example.exception
 /**
  * Base exception for token-related errors
  */
-open class TokenException(
+sealed class TokenException(
     message: String,
     cause: Throwable? = null
 ) : Exception(message, cause)
